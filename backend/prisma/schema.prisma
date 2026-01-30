@@ -1,0 +1,883 @@
+// ============================================================================
+// LEAN TRAVEL PLATFORM - PRISMA SCHEMA
+// Database schema for Bus, Airline, and Hotel booking platform
+// ============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// USER & AUTHENTICATION MODULE
+// ============================================================================
+
+enum UserRole {
+  CUSTOMER
+  ADMIN
+  SUPER_ADMIN
+  PARTNER
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  PENDING_VERIFICATION
+}
+
+model User {
+  id            String     @id @default(uuid())
+  email         String     @unique
+  phone         String     @unique
+  password      String?    // Nullable for OTP-only users
+  firstName     String
+  lastName      String
+  role          UserRole   @default(CUSTOMER)
+  status        UserStatus @default(PENDING_VERIFICATION)
+  
+  // Profile
+  dateOfBirth   DateTime?
+  gender        String?
+  profileImage  String?
+  
+  // KYC/Verification
+  isEmailVerified    Boolean @default(false)
+  isPhoneVerified    Boolean @default(false)
+  isKycVerified      Boolean @default(false)
+  kycDocumentType    String?
+  kycDocumentNumber  String?
+  kycDocumentImage   String?
+  
+  // Timestamps
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  lastLoginAt   DateTime?
+  
+  // Relations
+  bookings      Booking[]
+  passengers    Passenger[]
+  wallet        Wallet?
+  otpLogs       OtpLog[]
+  sessions      UserSession[]
+  
+  @@map("users")
+}
+
+model OtpLog {
+  id          String    @id @default(uuid())
+  userId      String?
+  phone       String
+  otp         String
+  purpose     String    // LOGIN, SIGNUP, PASSWORD_RESET, etc.
+  isUsed      Boolean   @default(false)
+  expiresAt   DateTime
+  createdAt   DateTime  @default(now())
+  
+  user        User?     @relation(fields: [userId], references: [id])
+  
+  @@map("otp_logs")
+}
+
+model UserSession {
+  id          String    @id @default(uuid())
+  userId      String
+  token       String    @unique
+  deviceInfo  String?
+  ipAddress   String?
+  isValid     Boolean   @default(true)
+  expiresAt   DateTime
+  createdAt   DateTime  @default(now())
+  
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("user_sessions")
+}
+
+// ============================================================================
+// WALLET MODULE
+// ============================================================================
+
+model Wallet {
+  id              String   @id @default(uuid())
+  userId          String   @unique
+  balance         Decimal  @default(0) @db.Decimal(10, 2)
+  holdBalance     Decimal  @default(0) @db.Decimal(10, 2)
+  currency        String   @default("INR")
+  
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relations
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions    WalletTransaction[]
+  
+  @@map("wallets")
+}
+
+enum TransactionType {
+  CREDIT
+  DEBIT
+  HOLD
+  RELEASE
+  REFUND
+}
+
+enum TransactionStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  CANCELLED
+}
+
+model WalletTransaction {
+  id              String            @id @default(uuid())
+  walletId        String
+  type            TransactionType
+  amount          Decimal           @db.Decimal(10, 2)
+  status          TransactionStatus @default(PENDING)
+  description     String?
+  referenceId     String?           // Booking ID or other reference
+  referenceType   String?           // BOOKING, REFUND, etc.
+  
+  // Razorpay integration
+  razorpayOrderId     String?
+  razorpayPaymentId   String?
+  razorpaySignature   String?
+  
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  
+  wallet          Wallet            @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  
+  @@map("wallet_transactions")
+}
+
+// ============================================================================
+// PARTNER & INVENTORY MODULE
+// ============================================================================
+
+enum PartnerType {
+  BUS_OPERATOR
+  AIRLINE
+  HOTEL_CHAIN
+  INDIVIDUAL_HOTEL
+}
+
+enum PartnerStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  PENDING_APPROVAL
+}
+
+model Partner {
+  id              String        @id @default(uuid())
+  name            String
+  type            PartnerType
+  status          PartnerStatus @default(PENDING_APPROVAL)
+  
+  // Contact
+  email           String
+  phone           String
+  address         String?
+  city            String?
+  state           String?
+  country         String?
+  pincode         String?
+  
+  // Business details
+  gstNumber       String?
+  panNumber       String?
+  
+  // Hold quota configuration
+  holdQuotaEnabled    Boolean   @default(true)
+  holdQuotaPercentage Decimal   @default(25.00) @db.Decimal(5, 2)
+  holdExpiryMinutes   Int       @default(30) // Minutes before auto-release
+  
+  // Timestamps
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  
+  // Relations
+  busRoutes       BusRoute[]
+  flights         Flight[]
+  hotels          Hotel[]
+  inventoryBatches InventoryBatch[]
+  
+  @@map("partners")
+}
+
+// Pre-purchased inventory tracking
+model InventoryBatch {
+  id              String            @id @default(uuid())
+  partnerId       String
+  category        BookingCategory   // BUS, AIRLINE, HOTEL
+  
+  // Inventory details
+  totalQuantity   Int
+  usedQuantity    Int               @default(0)
+  heldQuantity    Int               @default(0)
+  availableQuantity Int             @default(0)
+  
+  // Pricing
+  baseCost        Decimal           @db.Decimal(10, 2)
+  sellingPrice    Decimal           @db.Decimal(10, 2)
+  
+  // Validity
+  validFrom       DateTime
+  validUntil      DateTime
+  
+  status          InventoryStatus   @default(ACTIVE)
+  
+  // Timestamps
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  
+  partner         Partner           @relation(fields: [partnerId], references: [id])
+  
+  @@map("inventory_batches")
+}
+
+enum InventoryStatus {
+  ACTIVE
+  EXHAUSTED
+  EXPIRED
+  DISABLED
+}
+
+// ============================================================================
+// BUS BOOKING MODULE
+// ============================================================================
+
+model BusRoute {
+  id              String    @id @default(uuid())
+  partnerId       String
+  
+  // Route details
+  routeNumber     String
+  source          String
+  destination     String
+  sourceStation   String
+  destinationStation String
+  
+  // Distance & Duration
+  distanceKm      Int?
+  durationMinutes Int
+  
+  // Bus details
+  busType         BusType
+  busNumber       String
+  amenities       String[]  // AC, WIFI, CHARGING, etc.
+  
+  // Schedule
+  departureTime   DateTime
+  arrivalTime     DateTime
+  
+  // Days of operation
+  operatingDays   Int[]     // 0=Sunday, 6=Saturday
+  
+  // Pricing
+  baseFare        Decimal   @db.Decimal(10, 2)
+  
+  // Seat layout
+  totalSeats      Int
+  seatLayout      Json      // Seat configuration
+  
+  // Status
+  isActive        Boolean   @default(true)
+  
+  // Timestamps
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  partner         Partner   @relation(fields: [partnerId], references: [id])
+  schedules       BusSchedule[]
+  
+  @@map("bus_routes")
+}
+
+enum BusType {
+  SLEEPER_AC
+  SLEEPER_NON_AC
+  SEATER_AC
+  SEATER_NON_AC
+  SEMI_SLEEPER_AC
+  SEMI_SLEEPER_NON_AC
+  VOLVO_AC
+  VOLVO_MULTI_AXLE
+  LUXURY
+}
+
+model BusSchedule {
+  id              String          @id @default(uuid())
+  routeId         String
+  scheduleDate    DateTime
+  
+  // Dynamic pricing
+  baseFare        Decimal         @db.Decimal(10, 2)
+  
+  // Availability
+  availableSeats  Int
+  bookedSeats     Int             @default(0)
+  heldSeats       Int             @default(0)
+  
+  // Seat status map
+  seatStatus      Json            // { "1A": "AVAILABLE", "1B": "BOOKED", "2A": "HELD" }
+  
+  // Status
+  status          ScheduleStatus  @default(ACTIVE)
+  
+  // Timestamps
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  route           BusRoute        @relation(fields: [routeId], references: [id])
+  bookings        Booking[]
+  holds           SeatHold[]
+  
+  @@unique([routeId, scheduleDate])
+  @@map("bus_schedules")
+}
+
+model SeatHold {
+  id              String    @id @default(uuid())
+  scheduleId      String
+  
+  // Hold details
+  seatNumbers     String[]  // ["1A", "1B"]
+  heldBy          String?   // User ID or session ID
+  holdExpiry      DateTime
+  
+  // Status
+  status          HoldStatus @default(ACTIVE)
+  
+  // Timestamps
+  createdAt       DateTime  @default(now())
+  releasedAt      DateTime?
+  
+  schedule        BusSchedule @relation(fields: [scheduleId], references: [id])
+  
+  @@map("seat_holds")
+}
+
+// ============================================================================
+// AIRLINE BOOKING MODULE
+// ============================================================================
+
+model Flight {
+  id              String    @id @default(uuid())
+  partnerId       String
+  
+  // Flight details
+  flightNumber    String
+  airlineCode     String
+  airlineName     String
+  
+  // Route
+  source          String    // Airport code
+  destination     String    // Airport code
+  sourceAirport   String
+  destinationAirport String
+  
+  // Schedule
+  departureTime   DateTime
+  arrivalTime     DateTime
+  durationMinutes Int
+  
+  // Days of operation
+  operatingDays   Int[]
+  
+  // Aircraft
+  aircraftType    String?
+  
+  // Status
+  isActive        Boolean   @default(true)
+  
+  // Timestamps
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  partner         Partner   @relation(fields: [partnerId], references: [id])
+  schedules       FlightSchedule[]
+  
+  @@map("flights")
+}
+
+enum CabinClass {
+  ECONOMY
+  PREMIUM_ECONOMY
+  BUSINESS
+  FIRST
+}
+
+model FlightSchedule {
+  id              String          @id @default(uuid())
+  flightId        String
+  scheduleDate    DateTime
+  
+  // Pricing per cabin class
+  economyFare     Decimal         @db.Decimal(10, 2)
+  premiumFare     Decimal?        @db.Decimal(10, 2)
+  businessFare    Decimal?        @db.Decimal(10, 2)
+  firstFare       Decimal?        @db.Decimal(10, 2)
+  
+  // Availability per cabin class
+  economySeats    Int
+  premiumSeats    Int             @default(0)
+  businessSeats   Int             @default(0)
+  firstSeats      Int             @default(0)
+  
+  // Booked/Held counts
+  economyBooked   Int             @default(0)
+  premiumBooked   Int             @default(0)
+  businessBooked  Int             @default(0)
+  firstBooked     Int             @default(0)
+  
+  // Status
+  status          ScheduleStatus  @default(ACTIVE)
+  
+  // Fare rules reference
+  fareRulesId     String?
+  
+  // Timestamps
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  flight          Flight          @relation(fields: [flightId], references: [id])
+  fareRules       FareRules?      @relation(fields: [fareRulesId], references: [id])
+  bookings        Booking[]
+  
+  @@unique([flightId, scheduleDate])
+  @@map("flight_schedules")
+}
+
+model FareRules {
+  id                  String    @id @default(uuid())
+  
+  // Cancellation rules
+  cancellationFreeWithinHours   Int       @default(24)
+  cancellationChargePercentage  Decimal   @default(0) @db.Decimal(5, 2)
+  cancellationChargeFixed       Decimal?  @db.Decimal(10, 2)
+  
+  // No-show rules
+  noShowChargePercentage        Decimal   @default(100) @db.Decimal(5, 2)
+  
+  // Reschedule rules
+  rescheduleAllowed             Boolean   @default(true)
+  rescheduleCharge              Decimal   @default(0) @db.Decimal(10, 2)
+  
+  // Baggage allowance
+  cabinBaggageKg                Int       @default(7)
+  checkInBaggageKg              Int       @default(15)
+  
+  // Refund processing time
+  refundProcessingDays          Int       @default(7)
+  
+  // Timestamps
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  
+  flightSchedules     FlightSchedule[]
+  
+  @@map("fare_rules")
+}
+
+// ============================================================================
+// HOTEL BOOKING MODULE
+// ============================================================================
+
+enum HotelType {
+  BUDGET
+  STANDARD
+  DELUXE
+  LUXURY
+  RESORT
+  BOUTIQUE
+}
+
+enum HotelStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+model Hotel {
+  id              String      @id @default(uuid())
+  partnerId       String
+  
+  // Basic info
+  name            String
+  type            HotelType
+  starRating      Int?
+  
+  // Location
+  address         String
+  city            String
+  state           String
+  country         String
+  pincode         String
+  latitude        Decimal?    @db.Decimal(10, 8)
+  longitude       Decimal?    @db.Decimal(11, 8)
+  
+  // Contact
+  phone           String
+  email           String
+  
+  // Amenities
+  amenities       String[]    // WIFI, POOL, SPA, GYM, etc.
+  
+  // Images
+  images          String[]
+  
+  // Policies
+  checkInTime     String      @default("12:00")
+  checkOutTime    String      @default("11:00")
+  
+  // Status
+  status          HotelStatus @default(ACTIVE)
+  
+  // Timestamps
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  
+  partner         Partner     @relation(fields: [partnerId], references: [id])
+  rooms           Room[]
+  
+  @@map("hotels")
+}
+
+enum RoomType {
+  SINGLE
+  DOUBLE
+  TWIN
+  DELUXE
+  SUITE
+  FAMILY
+  PRESIDENTIAL
+}
+
+model Room {
+  id              String    @id @default(uuid())
+  hotelId         String
+  
+  // Room details
+  roomType        RoomType
+  roomCategory    String    // Standard, Deluxe, etc.
+  roomSize        String?   // sq ft or sq m
+  
+  // Capacity
+  maxAdults       Int       @default(2)
+  maxChildren     Int       @default(0)
+  maxOccupancy    Int       @default(2)
+  
+  // Bedding
+  bedType         String    // King, Queen, Twin, etc.
+  
+  // Amenities
+  amenities       String[]
+  
+  // Images
+  images          String[]
+  
+  // Total rooms of this type
+  totalRooms      Int
+  
+  // Base price per night
+  basePrice       Decimal   @db.Decimal(10, 2)
+  
+  // Timestamps
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  hotel           Hotel     @relation(fields: [hotelId], references: [id])
+  inventory       RoomInventory[]
+  
+  @@map("rooms")
+}
+
+model RoomInventory {
+  id              String    @id @default(uuid())
+  roomId          String
+  date            DateTime
+  
+  // Pricing
+  price           Decimal   @db.Decimal(10, 2)
+  
+  // Availability
+  availableRooms  Int
+  bookedRooms     Int       @default(0)
+  heldRooms       Int       @default(0)
+  
+  // Status
+  isAvailable     Boolean   @default(true)
+  
+  // Timestamps
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  room            Room      @relation(fields: [roomId], references: [id])
+  bookings        Booking[]
+  
+  @@unique([roomId, date])
+  @@map("room_inventory")
+}
+
+// ============================================================================
+// BOOKING MODULE (Unified for all categories)
+// ============================================================================
+
+enum BookingCategory {
+  BUS
+  AIRLINE
+  HOTEL
+}
+
+enum BookingStatus {
+  PENDING
+  ON_HOLD
+  CONFIRMED
+  CANCELLED
+  NO_SHOW
+  COMPLETED
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+
+enum PaymentStatus {
+  PENDING
+  AUTHORIZED
+  CAPTURED
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+
+model Booking {
+  id              String          @id @default(uuid())
+  bookingNumber   String          @unique
+  
+  // User
+  userId          String
+  
+  // Category & References
+  category        BookingCategory
+  
+  // Bus specific
+  busScheduleId   String?
+  
+  // Flight specific
+  flightScheduleId String?
+  cabinClass      String?
+  
+  // Hotel specific
+  roomInventoryId String?
+  checkInDate     DateTime?
+  checkOutDate    DateTime?
+  nights          Int?
+  
+  // Booking details
+  status          BookingStatus   @default(PENDING)
+  paymentStatus   PaymentStatus   @default(PENDING)
+  
+  // Passenger/Guest info
+  primaryPassengerName  String
+  primaryPassengerPhone String?
+  primaryPassengerEmail String?
+  
+  // Pricing
+  baseAmount      Decimal         @db.Decimal(10, 2)
+  taxAmount       Decimal         @default(0) @db.Decimal(10, 2)
+  convenienceFee  Decimal         @default(0) @db.Decimal(10, 2)
+  discountAmount  Decimal         @default(0) @db.Decimal(10, 2)
+  totalAmount     Decimal         @db.Decimal(10, 2)
+  
+  // Add-ons
+  addOns          Json?           // { "meal": 500, "baggage": 1000, "seat": 300 }
+  addOnAmount     Decimal         @default(0) @db.Decimal(10, 2)
+  
+  // Payment
+  paymentMethod   String?
+  paidAmount      Decimal         @default(0) @db.Decimal(10, 2)
+  
+  // Razorpay
+  razorpayOrderId     String?
+  razorpayPaymentId   String?
+  razorpaySignature   String?
+  
+  // Cancellation
+  cancelledAt     DateTime?
+  cancelledBy     String?
+  cancellationReason String?
+  refundAmount    Decimal?        @db.Decimal(10, 2)
+  
+  // Timestamps
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  confirmedAt     DateTime?
+  
+  // Relations
+  user            User            @relation(fields: [userId], references: [id])
+  busSchedule     BusSchedule?    @relation(fields: [busScheduleId], references: [id])
+  flightSchedule  FlightSchedule? @relation(fields: [flightScheduleId], references: [id])
+  roomInventory   RoomInventory?  @relation(fields: [roomInventoryId], references: [id])
+  passengers      BookingPassenger[]
+  
+  @@map("bookings")
+}
+
+model BookingPassenger {
+  id              String    @id @default(uuid())
+  bookingId       String
+  
+  // Personal details
+  firstName       String
+  lastName        String
+  dateOfBirth     DateTime?
+  gender          String?
+  
+  // Contact
+  phone           String?
+  email           String?
+  
+  // Travel specific
+  seatNumber      String?   // Bus/Flight
+  seatPreference  String?   // Aisle, Window, etc.
+  
+  // Flight specific
+  mealPreference  String?
+  specialAssistance String?
+  
+  // Hotel specific
+  guestType       String?   // ADULT, CHILD
+  
+  // Documents
+  idType          String?   // PASSPORT, AADHAAR, etc.
+  idNumber        String?
+  
+  // Timestamps
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  booking         Booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  
+  @@map("booking_passengers")
+}
+
+// ============================================================================
+// CANCELLATION & REFUND MODULE
+// ============================================================================
+
+enum CancellationType {
+  USER_INITIATED
+  AIRLINE_INITIATED
+  OPERATOR_INITIATED
+  SYSTEM_INITIATED
+}
+
+enum RefundStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  REJECTED
+}
+
+model CancellationRequest {
+  id                  String          @id @default(uuid())
+  bookingId           String          @unique
+  
+  // Cancellation details
+  type                CancellationType
+  requestedBy         String          // User ID
+  requestedAt         DateTime        @default(now())
+  
+  // Reason
+  reason              String
+  subReason           String?
+  description         String?
+  
+  // Approval workflow
+  status              String          @default("PENDING") // PENDING, APPROVED, REJECTED
+  approvedBy          String?
+  approvedAt          DateTime?
+  
+  // Refund calculation
+  eligibleRefundAmount Decimal        @db.Decimal(10, 2)
+  cancellationCharges  Decimal         @db.Decimal(10, 2)
+  finalRefundAmount    Decimal         @db.Decimal(10, 2)
+  
+  // Refund processing
+  refundStatus        RefundStatus    @default(PENDING)
+  refundProcessedAt   DateTime?
+  refundTransactionId String?
+  
+  // Timestamps
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+  
+  @@map("cancellation_requests")
+}
+
+// ============================================================================
+// POLICIES & CONFIGURATION
+// ============================================================================
+
+model Policy {
+  id              String    @id @default(uuid())
+  name            String    @unique
+  category        String    // CANCELLATION, REFUND, BOOKING, etc.
+  description     String?
+  
+  // Policy rules as JSON for flexibility
+  rules           Json
+  
+  // Status
+  isActive        Boolean   @default(true)
+  effectiveFrom   DateTime
+  effectiveUntil  DateTime?
+  
+  // Timestamps
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  createdBy       String?
+  
+  @@map("policies")
+}
+
+model SystemConfig {
+  id              String    @id @default(uuid())
+  key             String    @unique
+  value           String
+  description     String?
+  
+  // Timestamps
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  @@map("system_config")
+}
+
+// ============================================================================
+// ADMIN & REPORTING
+// ============================================================================
+
+enum ScheduleStatus {
+  ACTIVE
+  CANCELLED
+  DELAYED
+  COMPLETED
+}
+
+enum HoldStatus {
+  ACTIVE
+  RELEASED
+  CONVERTED
+  EXPIRED
+}
