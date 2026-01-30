@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Apple Liquid Glass - Component Showcase</title>
+  <link rel="stylesheet" href="liquid-glass-components.css">
+  <style>
+    /* Showcase-specific styles */
+    .showcase {
+      padding: 40px 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .showcase-section {
+      margin-bottom: 60px;
+    }
+    
+    .showcase-section__title {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 24px;
+      color: var(--text-primary);
+    }
+    
+    .showcase-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+    
+    .showcase-item {
+      padding: 20px;
+    }
+    
+    .showcase-item__label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+    
+    .demo-bg {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 40px;
+      border-radius: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .color-swatch {
+      width: 80px;
+      height: 80px;
+      border-radius: 16px;
+      margin-bottom: 8px;
+    }
+    
+    .color-swatch__label {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+    
+    .component-preview {
+      padding: 24px;
+    }
+    
+    .spacing-demo {
+      background: var(--ios-blue);
+      border-radius: 4px;
+    }
+    
+    .page-preview {
+      border: 2px dashed rgba(0, 0, 0, 0.1);
+      border-radius: 20px;
+      padding: 20px;
+      min-height: 400px;
+      position: relative;
+    }
+    
+    .page-preview__label {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 14px;
+      color: var(--text-tertiary);
+    }
+  </style>
+</head>
+<body>
+  <!-- Floating Navigation Demo -->
+  <nav class="glass-nav">
+    <a href="#" class="glass-nav__brand">
+      <div class="glass-nav__logo">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="18" height="18" rx="4"/>
+          <path d="M8 12h8M12 8v8"/>
+        </svg>
+      </div>
+      Liquid Glass
+    </a>
+    <div class="glass-nav__menu">
+      <a href="#" class="glass-nav__item glass-nav__item--active">Components</a>
+      <a href="#" class="glass-nav__item">Design</a>
+      <a href="#" class="glass-nav__item">Documentation</a>
+      <button class="btn btn--primary btn--small">Get Started</button>
+    </div>
+  </nav>
+
+  <div class="showcase mt-nav">
+    <!-- Header -->
+    <div class="showcase-section">
+      <h1 class="text-title-1" style="text-align: center; margin-bottom: 8px;">Apple Liquid Glass</h1>
+      <p class="text-body text-secondary" style="text-align: center; max-width: 600px; margin: 0 auto 40px;">
+        A premium design system inspired by Apple's design language. 
+        Features frosted glass effects, smooth animations, and iOS-native aesthetics.
+      </p>
+    </div>
+
+    <!-- Color Palette -->
+    <div class="showcase-section">
+      <h2 class="showcase-section__title">Color Palette</h2>
+      <div class="glass-card" style="padding: 24px;">
+        <div class="showcase-grid">
+          <div>
+            <div class="color-swatch" style="background: var(--ios-blue);"></div>
+            <div class="color-swatch__label">iOS Blue<br>#007AFF</div>
+          </div>
+          <div>
+            <div class="color-swatch" style="background: var(--ios-green);"></div>
+            <div class="color-swatch__label">iOS Green<br>#34C759</div>
+          </div>
+          <div>
+            <div class="color-swatch" style="background: var(--ios-orange);"></div>
+            <div class="color-swatch__label">iOS Orange<br>#FF9500</div>
+          </div>
+          <div>
+            <div class="color-swatch" style="background: var(--ios-red);"></div>
+            <div class="color-swatch__label">iOS Red<br>#FF3B30</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Glass Cards -->
+    <div class="showcase-section">
+      <h2 class="showcase-section__title">Glass Cards</h2>
+      <div class="showcase-grid">
+        <div class="showcase-item">
+          <div class="showcase-item__label">Default Card</div>
+          <div class="glass-card" style="padding: 24px;">
+            <h3 class="text-headline">Standard Glass</h3>
+            <p class="text-subhead text-secondary" style="margin-top: 8px;">
+              Default frosted glass card with subtle reflections and depth.
+            </p>
+          </div>
+        </div>
+        
+        <div class="showcase-item">
+          <div class="showcase-item__label">Elevated Card</div>
+          <div class="glass-card glass-card--elevated" style="padding: 24px;">
+            <h3 class="text-headline">Elevated Glass</h3>
+            <p class="text-subhead text-secondary" style="margin-top: 8px;">
+              More prominent card with stronger shadows for emphasis.
+            </p>
+          </div>
+        </div>
+        
+        <div class="showcase-item">
+          <div class="showcase-item__label">On Gradient</div>
+          <div class="demo-bg">
+            <div class="glass-card" style="padding: 24px;">
+              <h3 class="text-headline">Glass on Color</h3>
+              <p class="text-subhead text-secondary" style="margin-top: 8px;">
+                Glass cards work beautifully on any background.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Buttons -->
+    <div class="showcase-section">
+      <h2 class="showcase-section__title">Buttons</h2>
+      <div class="glass-card" style="padding: 24px;">
+        <div class="showcase-grid">
+          <div class="showcase-item">
+            <div class="showcase-item__label">Primary</div>
+            <button class="btn btn--primary">Get Started</button>
+          </div>
+          <div class="showcase-item">
+            <div class="showcase-item__label">Secondary</div>
+            <button class="btn btn--secondary">Learn More</button>
+          </div>
+          <div class="showcase-item">
+            <div class="showcase-item__label">Glass</div>
+            <button class="btn btn--glass">Glass Button</button>
+          </div>
+          <div class="showcase-item">
+            <div class="showcase-item__label">Large</div>
+            <button class="btn btn--primary btn--large">Large Button</button>
+          </div>
+          <div class="showcase-item">
+            <div class="showcase-item__label">Small</div>
+            <button class="btn btn--primary btn--small">Small</button>
+          </div>
+          <div class="showcase-item">
+            <div class="showcase-item__label">With Icon</div>
+            <button class="btn btn--primary">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+              Continue
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Inputs -->
+    <div class="showcase-section">
+      <h2 class="showcase-section__title">Inputs</h2>
+      <div class="glass-card" style="padding: 24px;">
+        <div class="showcase-grid">
+          <div class="showcase-item">
+            <div class="showcase-item__label">Default Input</div>
+            <input type="text" class="input" placeholder="Enter your name">
+          </div>
+          <div class="showcase-item">
+            <div class="showcase-item__label">With Icon</div>
+            <div class="input-wrapper">
+              <svg class="input__icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2"/>
+                <path d="M7 11V7a5 5 0 0110 0v4"/>
+              </svg>
+              <input type="password" class="input input--with-icon" placeholder="Password">
+            </div>
+          </div>
+          <div class="showcase-item">
+            <div class="showcase-item__label">Search Bar</div>
+            <div class="search-bar">
+              <svg class="search-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"/>
+                <path d="M21 21l-4.35-4.35"/>
+              </svg>
+              <input type="text" class="search-bar__input" placeholder="Search...">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Segmented Control -->
+    <div class="showcase-section">
+      <h2 class="showcase-section__title">Segmented Control</h2>
+      <div class="glass-card" style="padding: 24px;">
+        <div class="showcase-item">
+          <div class="segmented-control">
+            <button class="segmented-control__item segmented-control__item--active">Bus</button>
+            <button class="segmented-control__item">Flight</button>
+            <button class="segmented-control__item">Hotel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toggle Switch -->
+    <div class="showcase-section">
+      <h2 class="showcase-section__title">Toggle Switch</h2>
+      <div class="glass-card" style="padding: 24px;">
+        <div class="showcase-grid">
+          <div class="showcase-item">
+            <div class="showcase-item__label">Off</div>
+            <label class="toggle">
+              <input type="checkbox" class="toggle__input">
+              <span class="toggle__slider"></span>
+            </label>
+          </div>
+          <div class="showcase-item">
+            <div class="showcase-item__label">On</div>
+            <label class="toggle">
+              <input type="checkbox" class="toggle__input" checked>
+              <span class="toggle__slider"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- List Items -->
+    <div class="showcase-section">
+      <h2 class="showcase-section__title">List Items</h2>
+      <div class="glass-card" style="padding: 12px;">
+        <div class="list-item">
+          <div class="list-item__icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+          </div>
+          <div class="list-item__content">
+            <div class="list-item__title">Personal Information</div>
+            <div class="list-item__subtitle">Update your profile details</div>
+          </div>
+          <svg class="list-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 18l6-6-6-6"/>
+          </svg>
+        </div>
+        <div class="list-item">
+          <div class="list-item__icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2"/>
+              <path d="M7 11V7a5 5 0 0110 0v4"/>
+            </svg>
+          </div>
+          <div class="list-item__content">
+            <div class="list-item__title">Security</div>
+            <div class="list-item__subtitle">Password and authentication</div>
+          </div>
+          <svg class="list-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 18l6-6-6-6"/>
+          </svg>
+        </div>
+        <div class="list-item">
+          <div class="list-item__icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/>
+            </svg>
+          </div>
+          <div class="list-item__content">
+            <div class="list-item__title">Preferences</div>
+            <div class="list-item__subtitle">Customize your experience</div>
+          </div>
+          <svg class="list-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 18l6-6-6-6"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Badges -->
+    <div class="showcase-section">
+      <h2 class="showcase-section__title">Badges</h2>
+      <div class="glass-card" style="padding: 24px;">
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+          <span class="badge badge--primary">Primary</span>
+          <span class="badge badge--success">Success</span>
+          <span class="badge badge--warning">Warning</span>
+          <span class="badge badge--error">Error</span>
+          <span class="badge badge--neutral">Neutral</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading States -->
+    <div class="showcase-section">
+      <h2 class="showcase-section__title">Loading States</h2>
+      <div class="glass-card" style="padding: 24px;">
+        <div class="showcase-grid">
+          <div class="showcase-item">
+            <div class="showcase-item__label">Spinner</div>
+            <div class="spinner"></div>
+          </div>
+          <div class="showcase-item">
+            <div class="showcase-item__label">Large Spinner</div>
+            <div class="spinner spinner--large"></div>
+          </div>
+          <div class="showcase-item">
+            <div class="showcase-item__label">Skeleton</div>
+            <div class="skeleton" style="width: 200px; height: 60px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Demo -->
+    <div class="showcase-section">
+      <h2 class="showcase-section__title">Modal</h2>
+      <div class="glass-card" style="padding: 24px;">
+        <button class="btn btn--primary" onclick="document.getElementById('demo-modal').style.display='flex'">
+          Open Modal
+        </button>
+      </div>
+    </div>
+
+    <!-- Page Previews -->
+    <div class="showcase-section">
+      <h2 class="showcase-section__title">Page Layouts</h2>
+      <div class="showcase-grid">
+        <div class="showcase-item">
+          <div class="showcase-item__label">Landing Page</div>
+          <div class="page-preview">
+            <div style="text-align: center;">
+              <div class="text-headline">Book Your Journey</div>
+              <div class="glass-card" style="margin-top: 16px; padding: 16px;">
+                <div class="segmented-control" style="margin-bottom: 16px;">
+                  <button class="segmented-control__item segmented-control__item--active">Bus</button>
+                  <button class="segmented-control__item">Flight</button>
+                  <button class="segmented-control__item">Hotel</button>
+                </div>
+                <input type="text" class="input" placeholder="From" style="margin-bottom: 8px;">
+                <input type="text" class="input" placeholder="To" style="margin-bottom: 8px;">
+                <button class="btn btn--primary" style="width: 100%;">Search</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="showcase-item">
+          <div class="showcase-item__label">Login Page</div>
+          <div class="page-preview">
+            <div style="max-width: 280px; margin: 0 auto;">
+              <div class="text-headline" style="text-align: center; margin-bottom: 16px;">Welcome Back</div>
+              <input type="email" class="input" placeholder="Email" style="margin-bottom: 12px;">
+              <input type="password" class="input" placeholder="Password" style="margin-bottom: 16px;">
+              <button class="btn btn--primary" style="width: 100%;">Sign In</button>
+            </div>
+          </div>
+        </div>
+        
+        <div class="showcase-item">
+          <div class="showcase-item__label">Dashboard</div>
+          <div class="page-preview">
+            <div class="showcase-grid" style="grid-template-columns: 1fr 1fr;">
+              <div class="glass-card" style="padding: 16px; text-align: center;">
+                <div class="text-caption text-secondary">Users</div>
+                <div class="text-headline">1,234</div>
+              </div>
+              <div class="glass-card" style="padding: 16px; text-align: center;">
+                <div class="text-caption text-secondary">Revenue</div>
+                <div class="text-headline">₹12L</div>
+              </div>
+            </div>
+            <div class="glass-card" style="margin-top: 16px; padding: 16px;">
+              <div class="text-caption text-secondary">Recent Bookings</div>
+              <div class="list-item" style="padding: 8px 0;">
+                <div class="list-item__title">#LT123</div>
+                <span class="badge badge--success">Confirmed</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="showcase-section" style="text-align: center; padding: 40px 0;">
+      <p class="text-subhead text-secondary">
+        Apple Liquid Glass Design System
+      </p>
+      <p class="text-caption text-tertiary" style="margin-top: 8px;">
+        Inspired by Apple's Human Interface Guidelines
+      </p>
+    </div>
+  </div>
+
+  <!-- Demo Modal -->
+  <div id="demo-modal" class="modal-backdrop" style="display: none;" onclick="this.style.display='none'">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal__header">
+        <h3 class="modal__title">Modal Title</h3>
+      </div>
+      <div class="modal__body">
+        <p class="text-body text-secondary">
+          This is a glass modal with smooth animations and frosted backdrop.
+          Click outside to close.
+        </p>
+      </div>
+      <div class="modal__footer">
+        <button class="btn btn--secondary" onclick="document.getElementById('demo-modal').style.display='none'">Cancel</button>
+        <button class="btn btn--primary">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Segmented control interaction
+    document.querySelectorAll('.segmented-control').forEach(control => {
+      control.querySelectorAll('.segmented-control__item').forEach(item => {
+        item.addEventListener('click', () => {
+          control.querySelectorAll('.segmented-control__item').forEach(i => {
+            i.classList.remove('segmented-control__item--active');
+          });
+          item.classList.add('segmented-control__item--active');
+        });
+      });
+    });
+  </script>
+</body>
+</html>
